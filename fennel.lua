@@ -46,6 +46,12 @@ local LIST_MT = { 'LIST',
 }
 local SEQUENCE_MT = { 'SEQUENCE' }
 
+local COMMENT_MT = { 'COMMENT',
+                     __tostring = function(self)
+                         return "--" .. self.content
+                     end
+}
+
 -- Load code with an environment in all recent Lua versions
 local function loadCode(code, environment, filename)
     environment = environment or _ENV or _G
@@ -77,6 +83,10 @@ end
 -- Create a new sequence
 local function sequence(...)
    return setmetatable({...}, SEQUENCE_MT)
+end
+
+local function comment(content)
+    return setmetatable({content = content}, COMMENT_MT)
 end
 
 -- Create a new expr
@@ -119,6 +129,10 @@ end
 -- Checks if an object is a sequence (created with a [] literal)
 local function isSequence(x)
    return type(x) == 'table' and getmetatable(x) == SEQUENCE_MT and x
+end
+
+local function isComment(x)
+    return type(x) == 'table' and getmetatable(x) == COMMENT_MT and x
 end
 
 --
@@ -272,9 +286,13 @@ local function parser(getbyte, filename)
             end
 
             if b == 59 then -- ; Comment
+                local chars = {}
+                repeat b = getb() until b ~= 59 -- strip initial semicolons
                 repeat
+                    chars[#chars + 1] = b
                     b = getb()
                 until not b or b == 10 -- newline
+                dispatch(comment(string.char(unpack(chars))))
             elseif type(delims[b]) == 'number' then -- Opening delimiter
                 table.insert(stack, setmetatable({
                     closer = delims[b],
@@ -867,6 +885,8 @@ local function compile1(ast, scope, parent, opts)
             e = symbolToExpression(ast, scope, true)
         end
         exprs = handleCompileOpts({e}, parent, opts, ast)
+    elseif isComment(ast) then
+        emit(parent, tostring(ast), ast)
     elseif type(ast) == 'nil' or type(ast) == 'boolean' then
         exprs = handleCompileOpts({expr(tostring(ast), 'literal')}, parent, opts)
     elseif type(ast) == 'number' then

@@ -124,7 +124,7 @@ local cases = {
 
     core = {
         -- comments
-        ["74 ; (require \"hey.dude\")"]=74,
+        ["(+ 74 0) ; (require \"hey.dude\")"]=74,
         -- comments go to the end of the line
         ["(var x 12) ;; (set x 99)\n x"]=12,
         -- calling built-in lua functions
