@@ -2040,7 +2040,7 @@ local function repl(options)
                     if loadok then
                         env._ = ret[1]
                         env.__ = ret
-                        for i = 1, #ret do ret[i] = pp(ret[i]) end
+                        for i = 1, (ret[1] == nil and 1 or #ret) do ret[i] = pp(ret[i]) end
                         onValues(ret)
                     end
                 end

@@ -6,6 +6,7 @@
 * Add `--globals` and `--globals-only` options to launcher script.
 * Remove `luaexpr` and `luastatement` for a single `lua` special.
 * Improve code generation for if expressions in many situations.
+* Print all returned values in repl, including nil
 
 ## 0.2.1 / 2019-01-22
 
